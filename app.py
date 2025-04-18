@@ -13,5 +13,12 @@ st.write("これはStreamlitを使ったサンプルアプリケーションで�
 user_input = st.text_input("質問を入力してください:")
 
 if user_input:
-    response = get_gpt_response(user_input)
-    st.write("応答:", response)
+    result = get_gpt_response(user_input)
+    tab1, tab2 = st.tabs(["応答結果", "参考情報"])
+    with tab1:
+        st.write(result["response"])
+    with tab2:
+        for i, ref in enumerate(result["references"], 1):
+            st.markdown(f"**[{i}]** {ref['page_content']}")
+            if "metadata" in ref:
+                st.markdown(f"`{ref['metadata']}`")
