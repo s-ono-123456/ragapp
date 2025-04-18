@@ -2,6 +2,7 @@ import streamlit as st
 import glob
 import os
 
+st.set_page_config(page_title="設計書表示アプリ")
 st.title("設計書表示アプリ")
 
 # sampleディレクトリのmdファイル一覧取得

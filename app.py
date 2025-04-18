@@ -6,6 +6,7 @@ from llm_client import get_gpt_response
 # OpenAI APIキーの設定
 openai.api_key = os.getenv("OPENAI_API_KEY")
 # Streamlitの設定
+st.set_page_config(page_title="サンプル RAG アプリ")
 st.title("サンプル RAG アプリ")
 st.write("これはRAGのサンプルアプリケーションです。")
 
