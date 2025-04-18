@@ -9,6 +9,7 @@ ragapp/
 ├── app.py                # StreamlitによるWebアプリ本体
 ├── llm_client.py         # OpenAI APIを使った応答取得ラッパー
 ├── chunk_md.py           # sample/内Markdownファイルのチャンキングスクリプト
+├── embed_and_index.py    # Markdownチャンクの埋め込み生成＆FAISSインデックス作成スクリプト
 ├── requirements.txt      # 必要なPythonパッケージ
 ├── README.md             # このファイル
 ├── ragapp.code-workspace # VSCode用ワークスペース設定
@@ -16,6 +17,9 @@ ragapp/
 │   ├── 受注管理画面.md
 │   ├── 在庫管理画面.md
 │   └── 発送管理画面.md
+├── index_files/          # FAISSインデックス・チャンク情報の保存先
+│   ├── faiss.index
+│   └── chunks.pkl
 └── __pycache__/          # Pythonキャッシュ
 ```
 
@@ -41,20 +45,34 @@ ragapp/
 ## 使い方
 - テキストボックスに質問を入力し、エンターキーを押すとAIの応答が表示されます。
 
-## Markdownチャンキングについて
+## Markdownチャンキング・埋め込み・インデックス化について
+
 - `chunk_md.py` を実行すると、`sample/`ディレクトリ内の全Markdownファイルを見出しや文字数で分割し、AIや検索用途で扱いやすいチャンクデータを生成できます。
-- 実行例：
-  ```bash
-  python chunk_md.py
-  ```
-  ※標準出力にチャンク例が表示されます。
+  - 実行例：
+    ```bash
+    python chunk_md.py
+    ```
+    ※標準出力にチャンク例が表示されます。
+
+- `embed_and_index.py` を実行すると、`chunk_md.py`で生成されるチャンクに対して日本語BERTモデル（GLuCoSE-base-ja-v2）で埋め込みベクトルを生成し、FAISSでインデックス化します。生成物は`index_files/`ディレクトリ（`faiss.index`, `chunks.pkl`）に保存されます。
+  - 実行例：
+    ```bash
+    python embed_and_index.py
+    ```
+    ※`index_files/`配下にFAISSインデックスとチャンク情報が保存されます。
 
 ## 依存パッケージ
 - streamlit
 - openai
 - langchain
 - langchain-openai
+- transformers
+- torch
+- faiss-cpu
+- sentencepiece
 
 ## 補足
 - `llm_client.py` はOpenAIのAPIラッパーです。モデル名やAPIキーは適宜変更してください。
-- `sample/`配下のMarkdownは業務システムの画面設計例です。ご自身の設計書に差し替えて利用可能です.
+- `embed_and_index.py` はMarkdownチャンクの埋め込み生成とFAISSインデックス作成を行います。日本語BERTモデル（GLuCoSE-base-ja-v2）を利用します。
+- `index_files/` 配下にはFAISSインデックス（faiss.index）とチャンク情報（chunks.pkl）が保存されます。
+- `sample/`配下のMarkdownは業務システムの画面設計例です。ご自身の設計書に差し替えて利用可能です。
