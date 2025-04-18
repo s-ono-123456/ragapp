@@ -1,10 +1,10 @@
-import openai
+from langchain_openai import ChatOpenAI
 import os
 
 def get_gpt_response(prompt):
-    client = openai.Client()
-    response = client.chat.completions.create(
+    llm = ChatOpenAI(
         model="gpt-4.1-nano",
-        messages=[{"role": "user", "content": prompt}]
+        openai_api_key=os.getenv("OPENAI_API_KEY")
     )
-    return response.choices[0].message.content
+    response = llm.invoke(prompt)
+    return response.content
