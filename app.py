@@ -1,22 +1,17 @@
 import streamlit as st
 import openai
+import os
+from llm_client import get_gpt_response
 
 # OpenAI APIキーの設定
-openai.api_key = ""
+openai.api_key = os.getenv("OPENAI_API_KEY")
+# Streamlitの設定
 st.title("サンプル Streamlit アプリ")
 st.write("これはStreamlitを使ったサンプルアプリケーションです。")
 
-def get_gpt_response(prompt):
-    response = openai.ChatCompletion.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return response['choices'][0]['message']['content']
-
 # ユーザーからの入力を受け取る
-user_input = st.text_input("あなたのメッセージを入力してください:")
+user_input = st.text_input("質問を入力してください:")
 
-if st.button("送信"):
-    if user_input:
-        response = get_gpt_response(user_input)
-        st.write("GPT-4o-miniの応答:", response)
+if user_input:
+    response = get_gpt_response(user_input)
+    st.write("応答:", response)
