@@ -19,6 +19,19 @@ if user_input:
         st.write(result["response"])
     with tab2:
         for i, ref in enumerate(result["references"], 1):
-            st.markdown(f"**[{i}]** {ref['page_content']}")
-            if "metadata" in ref:
-                st.markdown(f"`{ref['metadata']}`")
+            titles = []
+            metadata = ref.get("metadata", {})
+            if metadata:
+                if "h2" in metadata:
+                    if isinstance(metadata["h2"], list):
+                        titles.extend(metadata["h2"])
+                    else:
+                        titles.append(metadata["h2"])
+                if "h3" in metadata:
+                    if isinstance(metadata["h3"], list):
+                        titles.extend(metadata["h3"])
+                    else:
+                        titles.append(metadata["h3"])
+            title_str = " / ".join(titles) if titles else f"参考情報 {i}"
+            with st.expander(title_str):
+                st.markdown(ref['page_content'])
