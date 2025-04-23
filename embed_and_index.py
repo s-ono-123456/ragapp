@@ -24,7 +24,6 @@ def get_embeddings(texts, tokenizer, model, device):
 
 if __name__ == '__main__':
     import numpy as np
-    import os
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     model = AutoModel.from_pretrained(MODEL_NAME).to(device)
@@ -35,10 +34,7 @@ if __name__ == '__main__':
     dim = embeddings.shape[1]
     index = faiss.IndexFlatL2(dim)
     index.add(embeddings)
-    # index_filesディレクトリがなければ作成
-    if not os.path.exists('index_files'):
-        os.makedirs('index_files')
-    faiss.write_index(index, 'index_files/faiss.index')
-    with open('index_files/chunks.pkl', 'wb') as f:
+    faiss.write_index(index, 'faiss.index')
+    with open('chunks.pkl', 'wb') as f:
         pickle.dump(chunks, f)
-    print("FAISSインデックス(index_files/faiss.index)とチャンク情報(index_files/chunks.pkl)を保存しました。")
+    print("FAISSインデックス(faiss.index)とチャンク情報(chunks.pkl)を保存しました。")
