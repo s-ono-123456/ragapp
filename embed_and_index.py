@@ -1,6 +1,11 @@
-# 埋め込み生成とFAISSインデックス化用スクリプト
+# 埋め込み生成とtxtaiインデックス化用スクリプト
 import pickle
-import faiss
+import os
+
+# OpenMP競合を回避するための設定
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+from txtai.embeddings import Embeddings
 from transformers import AutoTokenizer, AutoModel
 import torch
 from chunk_md import chunk_markdown_files
@@ -24,17 +29,35 @@ def get_embeddings(texts, tokenizer, model, device):
 
 if __name__ == '__main__':
     import numpy as np
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    model = AutoModel.from_pretrained(MODEL_NAME).to(device)
+    
+    # 出力ディレクトリの確認と作成
+    if not os.path.exists('index_files'):
+        os.makedirs('index_files')
+    
+    # チャンクの作成
     chunks = chunk_markdown_files()
     texts = [chunk['content'].page_content for chunk in chunks]
     print(f"{len(texts)}個のチャンクを埋め込み生成します…")
-    embeddings = get_embeddings(texts, tokenizer, model, device)
-    dim = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dim)
-    index.add(embeddings)
-    faiss.write_index(index, 'faiss.index')
-    with open('chunks.pkl', 'wb') as f:
+    
+    # txtaiのEmbeddingsオブジェクトを作成（グラフインデックスを有効化）
+    embeddings = Embeddings({
+        "method": "transformers", 
+        "path": MODEL_NAME,
+        "graph": True,  # グラフインデックスを有効化
+        "scoring": "bm25",  # BM25スコアリングを使用
+        "centroid": True  # 中心性を計算して重要なノードを特定
+    })
+    
+    # データの準備（txtai用）
+    data = [(i, text, None) for i, text in enumerate(texts)]
+    
+    # インデックスの構築
+    embeddings.index(data)
+    
+    # インデックスとチャンク情報の保存
+    embeddings.save("index_files/txtai.index")
+    
+    with open('index_files/chunks.pkl', 'wb') as f:
         pickle.dump(chunks, f)
-    print("FAISSインデックス(faiss.index)とチャンク情報(chunks.pkl)を保存しました。")
+    
+    print("グラフインデックスを有効化したtxtaiインデックス(index_files/txtai.index)とチャンク情報(index_files/chunks.pkl)を保存しました。")

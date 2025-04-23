@@ -4,4 +4,6 @@ langchain
 langchain-openai
 transformers
 torch
+txtai
+txtai[graph]
 faiss-cpu

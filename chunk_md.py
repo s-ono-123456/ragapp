@@ -1,6 +1,10 @@
 # sampleフォルダ内の全Markdownファイルをチャンキングする
 import glob
 import os
+
+# OpenMP競合を回避するための設定
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 from langchain.text_splitter import MarkdownHeaderTextSplitter
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 

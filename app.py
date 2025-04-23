@@ -1,6 +1,10 @@
 import streamlit as st
 import openai
 import os
+
+# OpenMP競合を回避するための設定
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 from llm_client import get_gpt_response
 
 # OpenAI APIキーの設定
@@ -10,11 +14,16 @@ st.set_page_config(page_title="サンプル RAG アプリ")
 st.title("サンプル RAG アプリ")
 st.write("これはRAGのサンプルアプリケーションです。")
 
+# サイドバーにグラフ機能のON/OFF切り替えを追加
+st.sidebar.title("検索オプション")
+use_graph = st.sidebar.checkbox("グラフ検索を有効にする", value=True, help="ONにするとグラフ検索機能を使用して関連性の高い情報を検索します")
+
 # ユーザーからの入力を受け取る
 user_input = st.text_input("質問を入力してください:")
 
 if user_input:
-    result = get_gpt_response(user_input)
+    # グラフ機能の設定を関数に渡す
+    result = get_gpt_response(user_input, use_graph=use_graph)
     tab1, tab2 = st.tabs(["応答結果", "参考情報"])
     with tab1:
         st.write(result["response"])

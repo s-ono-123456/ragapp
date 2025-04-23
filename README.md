@@ -39,7 +39,7 @@ ragapp/
    ```
 3. アプリの起動
    ```bash
-   streamlit run app.py
+   streamlit run app.py --server.fileWatcherType none
    ```
 
 ## 使い方
@@ -76,3 +76,4 @@ ragapp/
 - `embed_and_index.py` はMarkdownチャンクの埋め込み生成とFAISSインデックス作成を行います。日本語BERTモデル（GLuCoSE-base-ja-v2）を利用します。
 - `index_files/` 配下にはFAISSインデックス（faiss.index）とチャンク情報（chunks.pkl）が保存されます。
 - `sample/`配下のMarkdownは業務システムの画面設計例です。ご自身の設計書に差し替えて利用可能です。
+- txtai[graph]をインストールするには環境変数にPYTHONUTF8を追加し、値を1にセットする必要あり。
