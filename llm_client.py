@@ -76,14 +76,11 @@ def get_gpt_response(prompt, top_k=3, use_graph=True):
     
     # グラフ検索の有無で処理を分岐
     if use_graph:
-        # NetworkXオブジェクトの場合は、ノードを取得してスコア順にソート
-        # NetworkXオブジェクトはデフォルトでノードIDをキーとした辞書のような動作をする
-        # nodes()メソッドではなくnode属性を使用する
         print(f"Results: {results.scan(data=True)}")
         nodes = results.scan(data=True)
         # nodes = list(results)
         for result in nodes:
-            # txtaiはデフォルトで(id, score, text)の形式のタプルを返す
+            # txtaiはNetworkXでは(id, {'id': id , 'text':text 'score':score})の形式のタプルを返す
             idx = result[0]  # タプルの最初の要素がID
             if idx < len(_chunks):
                 chunk = _chunks[idx]
