@@ -76,7 +76,7 @@ def get_gpt_response(prompt, top_k=3, use_graph=True):
     
     # グラフ検索の有無で処理を分岐
     if use_graph:
-        print(f"Results: {results.scan(data=True)}")
+        # print(f"Results: {results.scan(data=True)}")
         nodes = results.scan(data=True)
         # nodes = list(results)
         for result in nodes:
@@ -94,7 +94,7 @@ def get_gpt_response(prompt, top_k=3, use_graph=True):
                 related_chunks.append(ref)
     else:
         # 通常の検索結果（タプル形式 (id, score, text)）の場合
-        print(f"Results: {results}")
+        # print(f"Results: {results}")
         for result in results:
             # txtaiはデフォルトで(id, score, text)の形式のタプルを返す
             idx = result[0]  # タプルの最初の要素がID
@@ -110,7 +110,7 @@ def get_gpt_response(prompt, top_k=3, use_graph=True):
                 related_chunks.append(ref)
     
     # 関連情報を付加したプロンプト作成
-    print(f"Related Chunks: {related_chunks}")
+    # print(f"Related Chunks: {related_chunks}")
     context = "\n\n".join([f"[スコア: {c['score']:.4f}]\n{c['page_content']}" for c in related_chunks])
     augmented_prompt = f"【参考情報】\n{context}\n\n【質問】\n{prompt}"
     # LLM呼び出し
