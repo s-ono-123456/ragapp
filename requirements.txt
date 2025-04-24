@@ -7,3 +7,6 @@ torch
 txtai
 txtai[graph]
 faiss-cpu
+sentence-transformers
+fugashi
+unidic-lite

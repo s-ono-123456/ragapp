@@ -24,7 +24,7 @@ user_input = st.text_input("質問を入力してください:")
 if user_input:
     # グラフ機能の設定を関数に渡す
     result = get_gpt_response(user_input, use_graph=use_graph)
-    tab1, tab2 = st.tabs(["応答結果", "参考情報"])
+    tab1, tab2, tab3 = st.tabs(["応答結果", "リランキング後の参考情報", "リランキング前の参考情報"])
     with tab1:
         st.write(result["response"])
     with tab2:
@@ -44,4 +44,26 @@ if user_input:
                         titles.append(metadata["h3"])
             title_str = " / ".join(titles) if titles else f"参考情報 {i}"
             with st.expander(title_str):
+                score_info = f"リランキングスコア: {ref.get('rerank_score', 0):.4f}"
+                st.info(score_info)
+                st.markdown(ref['page_content'])
+    with tab3:
+        for i, ref in enumerate(result["initial_references"], 1):
+            titles = []
+            metadata = ref.get("metadata", {})
+            if metadata:
+                if "h2" in metadata:
+                    if isinstance(metadata["h2"], list):
+                        titles.extend(metadata["h2"])
+                    else:
+                        titles.append(metadata["h2"])
+                if "h3" in metadata:
+                    if isinstance(metadata["h3"], list):
+                        titles.extend(metadata["h3"])
+                    else:
+                        titles.append(metadata["h3"])
+            title_str = " / ".join(titles) if titles else f"初期検索結果 {i}"
+            with st.expander(title_str):
+                score_info = f"初期検索スコア: {ref.get('score', 0):.4f}"
+                st.info(score_info)
                 st.markdown(ref['page_content'])

@@ -7,7 +7,10 @@ import pickle
 import numpy as np
 import torch
 from transformers import AutoTokenizer, AutoModel
+from sentence_transformers import CrossEncoder
+
 MODEL_NAME = 'pkshatech/GLuCoSE-base-ja-v2'
+RERANKER_MODEL = 'hotchpotch/japanese-reranker-cross-encoder-large-v1'
 INDEX_PATH = 'index_files/txtai.index'
 CHUNKS_PATH = 'index_files/chunks.pkl'
 
@@ -18,9 +21,10 @@ _tokenizer = None
 _model = None
 _embeddings = None
 _chunks = None
+_reranker = None
 
 def _load_resources():
-    global _tokenizer, _model, _embeddings, _chunks
+    global _tokenizer, _model, _embeddings, _chunks, _reranker
     if _tokenizer is None:
         _tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     if _model is None:
@@ -32,6 +36,8 @@ def _load_resources():
     if _chunks is None:
         with open(CHUNKS_PATH, 'rb') as f:
             _chunks = pickle.load(f)
+    if _reranker is None:
+        _reranker = CrossEncoder(RERANKER_MODEL)
 
 def _get_query_embedding(text):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -42,7 +48,7 @@ def _get_query_embedding(text):
         emb = outputs.last_hidden_state[:, 0, :].cpu().numpy()
     return emb
 
-def get_gpt_response(prompt, top_k=3, use_graph=True):
+def get_gpt_response(prompt, top_k=5, use_graph=True):
     """
     prompt: ユーザーからの質問文
     top_k: 関連チャンクの取得数
@@ -67,7 +73,7 @@ def get_gpt_response(prompt, top_k=3, use_graph=True):
     # 検索実行
     results = _embeddings.search(
         expanded_prompt, 
-        limit = top_k,
+        limit = 20,  # リランキングのためにより多くの候補を取得
         graph = use_graph
     )
     
@@ -109,13 +115,38 @@ def get_gpt_response(prompt, top_k=3, use_graph=True):
                     ref["metadata"] = chunk['content'].metadata
                 related_chunks.append(ref)
     
+    # リランキング前の初期検索結果を保存
+    initial_chunks = related_chunks.copy()
+    
+    # Cross-Encoderによるリランキング処理
+    if related_chunks:
+        print(f"初期検索結果数: {len(related_chunks)}")
+        
+        # クエリとチャンクのペアを作成
+        rerank_pairs = [[prompt, chunk["page_content"]] for chunk in related_chunks]
+        
+        # リランキングスコアを計算
+        rerank_scores = _reranker.predict(rerank_pairs)
+        
+        # スコアをチャンクに追加
+        for i, score in enumerate(rerank_scores):
+            related_chunks[i]["rerank_score"] = float(score)
+        
+        # スコアで降順ソート
+        related_chunks = sorted(related_chunks, key=lambda x: x["rerank_score"], reverse=True)
+        
+        # 上位のチャンクのみを使用
+        related_chunks = related_chunks[:top_k]
+        print(f"リランキング後の結果数: {len(related_chunks)}")
+    
     # 関連情報を付加したプロンプト作成
     # print(f"Related Chunks: {related_chunks}")
-    context = "\n\n".join([f"[スコア: {c['score']:.4f}]\n{c['page_content']}" for c in related_chunks])
+    context = "\n\n".join([f"[スコア: {c.get('rerank_score', 0):.4f}]\n{c['page_content']}" for c in related_chunks])
     augmented_prompt = f"【参考情報】\n{context}\n\n【質問】\n{prompt}"
     # LLM呼び出し
     response = llm.invoke(augmented_prompt)
     return {
         "response": response.content,
-        "references": related_chunks
+        "references": related_chunks,
+        "initial_references": initial_chunks  # リランキング前の結果も返す
     }
