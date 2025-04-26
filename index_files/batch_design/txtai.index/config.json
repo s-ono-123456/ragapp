@@ -1,0 +1,22 @@
+{
+  "method": "transformers",
+  "path": "pkshatech/GLuCoSE-base-ja-v2",
+  "graph": {
+    "backend": "networkx"
+  },
+  "scoring": "bm25",
+  "centroid": true,
+  "dimensions": 768,
+  "backend": "faiss",
+  "offset": 53,
+  "build": {
+    "create": "2025-04-26T00:41:38Z",
+    "python": "3.10.6",
+    "settings": {
+      "components": "IDMap,Flat"
+    },
+    "system": "Windows (AMD64)",
+    "txtai": "8.5.0"
+  },
+  "update": "2025-04-26T00:41:38Z"
+}

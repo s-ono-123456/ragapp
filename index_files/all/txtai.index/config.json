@@ -8,9 +8,9 @@
   "centroid": true,
   "dimensions": 768,
   "backend": "faiss",
-  "offset": 67,
+  "offset": 159,
   "build": {
-    "create": "2025-04-25T13:04:15Z",
+    "create": "2025-04-26T00:41:25Z",
     "python": "3.10.6",
     "settings": {
       "components": "IDMap,Flat"
@@ -18,5 +18,5 @@
     "system": "Windows (AMD64)",
     "txtai": "8.5.0"
   },
-  "update": "2025-04-25T13:04:15Z"
+  "update": "2025-04-26T00:41:25Z"
 }
